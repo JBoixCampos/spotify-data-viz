@@ -124,7 +124,7 @@ monthly_analysis <- df %>%
 # Create the bar chart with a trend line
 ggplot(monthly_analysis, aes(x = month, y = total_minutes)) +
   geom_col(fill = "skyblue", alpha = 0.8) +  # Bars for total minutes per month
-  geom_smooth(method = "loess", color = "purple", size = 1.2, se = FALSE) +  # Smoothed trend line
+  geom_smooth(method = "loess", color = "darkblue", size = 1.2, se = FALSE) +  # Smoothed trend line
   labs(
     title = "Monthly Listening Trends",
     x = "Month",
