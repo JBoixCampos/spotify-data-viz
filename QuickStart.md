@@ -23,7 +23,7 @@
 2. **Install Required Libraries**
    Open RStudio and run:
    ```
-   install.packages(c("tidyverse", "lubridate", "jsonlite"))
+   install.packages(c("tidyverse", "lubridate", "jsonlite", "ggplot2"))
    ```
 ## 🚀 Project Setup
   - Clone or download this GitHub repository
