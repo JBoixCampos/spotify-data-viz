@@ -35,7 +35,10 @@ combined_plot <- ggplot(monthly_hourly_analysis, aes(x = hour, y = total_minutes
   theme_minimal() +
   scale_x_continuous(breaks = 0:23)
 
-# Plot by month (separate)
+# Calculate the maximum total_minutes across all months
+max_total_minutes <- max(monthly_hourly_analysis$total_minutes)
+
+# Plot by month (separate) with fixed y-axis
 monthly_plot <- ggplot(monthly_hourly_analysis, aes(x = hour, y = total_minutes, color = month)) +
   geom_line(size = 1) +
   labs(title = "Most Active Listening Hours by Month (Separate)",
@@ -43,7 +46,9 @@ monthly_plot <- ggplot(monthly_hourly_analysis, aes(x = hour, y = total_minutes,
        color = "Month") +
   theme_minimal() +
   scale_x_continuous(breaks = 0:23) +
-  facet_wrap(~month, scales = "free_y")  # Creates separate plots by month
+  facet_wrap(~month, scales = "free_y") +  # Separate plots by month
+  coord_cartesian(ylim = c(0, max_total_minutes))  # Set the same y-axis limit for all facets
+
 
 # Show both plots
 combined_plot
