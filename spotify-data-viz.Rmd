@@ -1,0 +1,174 @@
+# LOADIG OF DATA
+```{r}
+# Required libraries
+library(tidyverse)
+library(lubridate)
+
+# Load JSON data
+data <- jsonlite::fromJSON("path/to/StreamingHistory_music_0.json")
+data <- data %>% mutate(msPlayed = as.numeric(msPlayed))
+
+# Convert to dataframe and process
+df <- data %>%
+  mutate(
+    endTime = ymd_hm(endTime),
+    hour = hour(endTime),
+    month = month(endTime, label = TRUE, abbr = FALSE, locale = "en_US.UTF-8"),
+    day_of_week = wday(endTime, label = TRUE, abbr = FALSE, week_start = 1, locale = "en_US.UTF-8")
+    
+  ) %>%
+  filter(endTime >= as_datetime("2024-01-01 00:00:00"))
+```
+# MOST ACTIVE HOURS
+```{r}
+# Group by month and hour
+monthly_hourly_analysis <- df %>%
+  group_by(month, hour) %>%
+  summarise(total_minutes = sum(msPlayed) / 60000, .groups = 'drop') # Divide by 60000 to convert from ms to minutes
+
+# Combined plot by month
+combined_plot <- ggplot(monthly_hourly_analysis, aes(x = hour, y = total_minutes, color = month, group = month)) +
+  geom_line(size = 1) +
+  labs(title = "Most Active Listening Hours by Month",
+       x = "Hour of the Day", y = "Minutes Played",
+       color = "Month") +
+  theme_minimal() +
+  scale_x_continuous(breaks = 0:23)
+
+# Plot by month (separate)
+monthly_plot <- ggplot(monthly_hourly_analysis, aes(x = hour, y = total_minutes, color = month)) +
+  geom_line(size = 1) +
+  labs(title = "Most Active Listening Hours by Month (Separate)",
+       x = "Hour of the Day", y = "Minutes Played",
+       color = "Month") +
+  theme_minimal() +
+  scale_x_continuous(breaks = 0:23) +
+  facet_wrap(~month, scales = "free_y")  # Creates separate plots by month
+
+# Show both plots
+combined_plot
+monthly_plot
+
+```
+# MOST ACTIVE DAYS OF THE WEEK
+```{r}
+# Group by day
+daily_analysis <- df %>%
+  group_by(day_of_week) %>%
+  summarise(total_minutes = sum(msPlayed) / 60000)
+
+# Visualize
+ggplot(daily_analysis, aes(x = day_of_week, y = total_minutes, fill = day_of_week)) +
+  geom_col(show.legend = FALSE) +
+  labs(title = "Most Active Listening Days",
+       x = "Day of the Week", y = "Minutes Played") +
+  theme_minimal()
+
+
+```
+
+# MOST LISTENED ARTISTS
+
+```{r}
+top_artists <- df %>%
+  group_by(artistName) %>%
+  summarise(total_minutes = sum(msPlayed) / 60000) %>%
+  arrange(desc(total_minutes)) %>%
+  slice_head(n = 10)
+
+# Visualize
+ggplot(top_artists, aes(x = reorder(artistName, total_minutes), y = total_minutes, fill = artistName)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(title = "Top 10 Most Played Artists",
+       x = "Artist", y = "Minutes Played") +
+  theme_minimal()
+
+```
+
+# MOST LISTENED SONGS
+
+```{r}
+top_tracks <- df %>%
+  group_by(trackName, artistName) %>%
+  summarise(total_minutes = sum(msPlayed) / 60000, .groups = "drop") %>%  # Add .groups to avoid warnings
+  arrange(desc(total_minutes)) %>% 
+  slice_max(total_minutes, n = 10)  # slice_max is more intuitive here than slice_head
+
+# Visualize
+ggplot(top_tracks, aes(x = reorder(paste(trackName, "-", artistName), total_minutes), y = total_minutes, fill = artistName)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(title = "Top 10 Most Played Songs",
+       x = "Song - Artist", y = "Minutes Played") +
+  theme_minimal()
+
+
+```
+
+# MONTHLY LISTENING TREND
+```{r}
+df <- df %>%
+  mutate(month = floor_date(endTime, "month"))
+
+monthly_analysis <- df %>%
+  group_by(month) %>%
+  summarise(total_minutes = sum(msPlayed) / 60000)
+
+# Visualize
+# Create the bar chart with a trend line
+ggplot(monthly_analysis, aes(x = month, y = total_minutes)) +
+  geom_col(fill = "skyblue", alpha = 0.8) +  # Bars for total minutes per month
+  geom_smooth(method = "loess", color = "purple", size = 1.2, se = FALSE) +  # Smoothed trend line
+  labs(
+    title = "Monthly Listening Trends",
+    x = "Month",
+    y = "Minutes Played"
+  ) +
+  theme_minimal()
+```
+
+# HEATMAP OF LISTENING BY HOURS AND DAYS
+```{r}
+heatmap_data <- df %>%
+  group_by(day_of_week, hour) %>%
+  summarise(total_minutes = sum(msPlayed) / 60000)
+
+# Visualize
+ggplot(heatmap_data, aes(x = hour, y = day_of_week, fill = total_minutes)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(title = "Heatmap of Listening by Hours and Days",
+       x = "Hour of the Day", y = "Day of the Week", fill = "Minutes") +
+  theme_minimal()
+
+
+```
+# Top 15 Artists: Total Listening Time vs. Number of Distinct Songs Played
+```{r}
+# Calculate the number of distinct songs listened to by each artist
+top_artists <- df %>%
+  group_by(artistName) %>%
+  summarise(
+    total_minutes = sum(msPlayed) / 60000,   # Total minutes played
+    unique_tracks = n_distinct(trackName),   # Number of distinct songs
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_minutes)) %>%
+  slice_head(n = 15)
+
+# Create the bubble chart with the number of distinct songs on the X-axis
+ggplot(top_artists, aes(x = unique_tracks, y = reorder(artistName, total_minutes), 
+                       size = total_minutes, color = artistName)) +
+  geom_point(alpha = 0.7) +
+  scale_size(range = c(3, 10)) +  # Adjust the bubble size
+  labs(
+    title = "Top 15 Artists: Total Listening Time vs. Number of Distinct Songs Played",
+    x = "Number of Distinct Songs",
+    y = "Artist",
+    size = "Minutes Played"
+  ) +
+  theme_minimal() +
+  guides(color = "none")  # Remove the color legend
+```
+
