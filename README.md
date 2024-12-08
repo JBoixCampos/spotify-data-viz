@@ -25,5 +25,5 @@ This project transforms your Spotify listening history into insightful visualiza
 ### 🚀 Purpose
 Democratize personal data analysis by providing an accessible, reproducible method to explore your music listening habits using free, open-source tools.
 
-### Inspiration
+### ✨ Inspiration
 Born from curiosity about the stories hidden in personal streaming data, this project turns raw JSON into meaningful musical insights.
