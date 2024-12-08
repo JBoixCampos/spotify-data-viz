@@ -7,6 +7,7 @@
   - tidyverse
   - lubridate
   - jsonlite
+  - ggplot2
 
 ## 🔍 Prerequisites
 1. **Download Your Spotify Data**
