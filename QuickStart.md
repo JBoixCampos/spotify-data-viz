@@ -10,8 +10,7 @@
 
 ## 🔍 Prerequisites
 1. **Download Your Spotify Data**
-   - Go to Spotify Account Settings
-   - Request "Extended Streaming History"
+   - Follow the steps in https://support.spotify.com/us/article/data-rights-and-privacy-settings/
    - Wait for Spotify to email you the JSON file
    - Save the `StreamingHistory_music_0.json` file somewhere memorable
 
