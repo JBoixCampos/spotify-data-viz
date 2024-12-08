@@ -29,9 +29,9 @@
   - Clone or download this GitHub repository
   - Open the .Rmd file in RStudio
   - Locate the data loading line:
-  ```
-  data <- jsonlite::fromJSON("path/to/StreamingHistory_music_0.json")
-  ```
+   ```
+   data <- jsonlite::fromJSON("path/to/StreamingHistory_music_0.json")
+   ```
   - Replace "path/to/StreamingHistory_music_0.json" with the FULL path to your downloaded Spotify JSON file
     - Windows Example: "C:/Users/YourUsername/Downloads/StreamingHistory_music_0.json"
     - Mac Example: "/Users/YourUsername/Downloads/StreamingHistory_music_0.json"
